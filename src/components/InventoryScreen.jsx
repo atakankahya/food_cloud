@@ -8,6 +8,7 @@ import { getExpiryColor, getStatusColor } from '../utils/helpers';
 
 const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
   const [searchQuery, setSearchQuery] = useState('');
+<<<<<<< HEAD
   const [activeFilter, setActiveFilter] = useState('all');        // 'all' | 'expiring' | 'categories'
   const [selectedCategory, setSelectedCategory] = useState(null); // e.g. 'Dairy', 'Fruits', etc.
 
@@ -38,6 +39,15 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
   })();
 
   // Delete an item by ID
+=======
+  
+  // Use filtered inventory based on the search query.
+  const filteredItems = inventoryItems.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Function to delete an item by id.
+>>>>>>> 5b3d97fb1552080f03e3aa03eacb7896a1217317
   const handleDelete = (id) => {
     setInventoryItems(inventoryItems.filter(item => item.id !== id));
   };
@@ -45,7 +55,10 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
   return (
     <FadeInContainer>
       <div className="h-full bg-gray-50">
+<<<<<<< HEAD
         {/* Header + Search */}
+=======
+>>>>>>> 5b3d97fb1552080f03e3aa03eacb7896a1217317
         <div className="bg-white p-4 shadow-sm">
           <h1 className="text-lg font-bold text-gray-800">My Inventory</h1>
           <div className="relative mt-3 mb-4">
@@ -53,11 +66,16 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
               type="text"
               placeholder="Search inventory..."
               value={searchQuery}
+<<<<<<< HEAD
               onChange={e => setSearchQuery(e.target.value)}
+=======
+              onChange={(e) => setSearchQuery(e.target.value)}
+>>>>>>> 5b3d97fb1552080f03e3aa03eacb7896a1217317
               className="w-full py-2.5 px-4 pr-10 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
             <Search size={18} className="absolute right-3 top-3 text-gray-500" />
           </div>
+<<<<<<< HEAD
 
           {/* Filter Buttons */}
           <div className="flex mb-2">
@@ -114,6 +132,9 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
           )}
         </div>
 
+=======
+        </div>
+>>>>>>> 5b3d97fb1552080f03e3aa03eacb7896a1217317
         {/* Inventory List */}
         <div className="p-4 pb-20">
           <div className="flex justify-between items-center mb-4">
@@ -143,7 +164,11 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
                     </div>
                     <p className={`text-xs ${getExpiryColor(item.expiresIn)}`}>
                       {item.expiresIn === null
+<<<<<<< HEAD
                         ? 'No expiry'
+=======
+                        ? ' '
+>>>>>>> 5b3d97fb1552080f03e3aa03eacb7896a1217317
                         : item.expiresIn <= 0
                         ? 'Expired today!'
                         : item.expiresIn === 1
@@ -152,6 +177,7 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
                     </p>
                   </div>
                 </div>
+<<<<<<< HEAD
                 <button
                   onClick={() => handleDelete(item.id)}
                   className="p-2 rounded-full bg-gray-100"
@@ -164,6 +190,19 @@ const InventoryScreen = ({ inventoryItems, setInventoryItems }) => {
             {filteredItems.length === 0 && (
               <p className="text-center text-gray-500 mt-8">No items found.</p>
             )}
+=======
+                {/* Only Delete Button Now */}
+                <div className="flex space-x-1">
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2 rounded-full bg-gray-100"
+                  >
+                    <Trash2 size={16} className="text-gray-600" />
+                  </button>
+                </div>
+              </div>
+            ))}
+>>>>>>> 5b3d97fb1552080f03e3aa03eacb7896a1217317
           </div>
         </div>
       </div>
