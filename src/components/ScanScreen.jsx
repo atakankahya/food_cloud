@@ -1,203 +1,222 @@
 // src/components/ScanScreen.jsx
 
 import React, { useState } from 'react';
-import { Camera, Check, Edit2 } from 'lucide-react';
+import { Camera, Receipt, Check, X } from 'lucide-react';
 import FadeInContainer from './FadeInContainer';
+import { categoryIcons } from '../utils/data';
 
-const ScanScreen = ({ inventoryItems, setInventoryItems }) => {
-  // State to simulate a scanned product preview.
-  const [scannedProduct, setScannedProduct] = useState(null);
-  // State to control display of the manual entry form.
-  const [showManualEntry, setShowManualEntry] = useState(false);
+// Simple default shelf‐life map (days)
+const DEFAULT_SHELF_LIFE = {
+  Meat: 3,
+  Dairy: 7,
+  Fruits: 5,
+  Vegetables: 7,
+  Bakery: 2,
+  Pantry: 180,
+};
 
-  // Dummy product data for "Scan and Add".
-  const dummyProduct = {
-    name: 'Organic Milk',
-    category: 'Dairy',
-    quantity: '1 gallon',
-    expiresIn: 2,
-    expiryInfo: 'Expires in 2 days',
-    icon: '🥛',
-    status: 'normal'
-  };
+export default function ScanScreen({ inventoryItems, setInventoryItems }) {
+  const [mode, setMode] = useState('choose'); // 'choose' | 'scanned' | 'manual'
+  const [scanned, setScanned] = useState(null);
+  const [toast, setToast] = useState('');
 
-  // Toast message state (for confirming addition).
-  const [message, setMessage] = useState('');
-
-  // Handlers for buttons.
-  const handleScanAndAdd = () => {
-    setScannedProduct(dummyProduct);
-  };
-
-  const handleManualEntry = () => {
-    setShowManualEntry(true);
-    // Optionally clear any scanned product.
-    setScannedProduct(null);
-  };
-
-  // State for manual entry form fields.
+  // Manual entry fields
   const [manualName, setManualName] = useState('');
-  const [manualCategory, setManualCategory] = useState('Dairy'); // default
+  const [manualCategory, setManualCategory] = useState('Dairy');
   const [manualQuantity, setManualQuantity] = useState('');
-  const [manualExpiresIn, setManualExpiresIn] = useState(''); // left blank for non-expiring items
+  const [manualExpiresIn, setManualExpiresIn] = useState('');
 
-  const handleManualEntrySubmit = (e) => {
-    e.preventDefault();
+  // Pill list
+  const categories = Object.keys(categoryIcons);
 
-    // If the expiration field is blank, set expiresIn to null.
-    const expiresIn = manualExpiresIn.trim() === '' ? null : Number(manualExpiresIn);
+  // --- Handler: “Scan and Add” stub ---
+  const handleScan = () => {
+    // In reality, launch camera + barcode scan or image recog.
+    // For now we simulate scanning “Chicken”
+    const name = 'Chicken';
+    const category = 'Meat';
+    const qty = '500g';
+    const expiresIn = DEFAULT_SHELF_LIFE[category] || null;
 
-    // Build the new item.
+    setScanned({ 
+      name, category, quantity: qty, expiresIn 
+    });
+    setMode('scanned');
+  };
+
+  // Add scanned or manual item to inventory
+  const addItem = ({ name, category, quantity, expiresIn }) => {
     const newItem = {
       id: Date.now(),
-      name: manualName || 'Unnamed Item',
-      category: manualCategory || 'Unknown',
-      quantity: manualQuantity || '',
-      expiresIn, // may be null if user didn't specify an expiration
-      status: 'normal'
+      name,
+      category,
+      quantity,
+      expiresIn,
+      status: expiresIn !== null && expiresIn <= 1 ? 'warning' : 'normal',
     };
+    setInventoryItems([newItem, ...inventoryItems]);
+    setToast(`${name} added!`);
+    setTimeout(() => setToast(''), 2000);
+    setMode('choose');
+    setScanned(null);
+  };
 
-    // Add the new item to the shared inventory state.
-    setInventoryItems([...inventoryItems, newItem]);
+  // --- Handler: Manual form submit ---
+  const handleManualSubmit = (e) => {
+    e.preventDefault();
+    const expiresIn = manualExpiresIn.trim() === '' 
+      ? DEFAULT_SHELF_LIFE[manualCategory] || null 
+      : Number(manualExpiresIn);
+    addItem({
+      name: manualName,
+      category: manualCategory,
+      quantity: manualQuantity,
+      expiresIn,
+    });
+    // reset form
+    setManualName(''); setManualQuantity(''); setManualExpiresIn('');
+  };
 
-    // Show confirmation message.
-    setMessage('Item added!');
-    // Clear form fields.
-    setManualName('');
-    setManualCategory('Dairy');
-    setManualQuantity('');
-    setManualExpiresIn('');
-    setShowManualEntry(false);
-
-    // Remove the confirmation message after 2 seconds.
-    setTimeout(() => {
-      setMessage('');
-    }, 2000);
+  // --- Stub: Receipt scanning ---
+  const handleScanReceipt = () => {
+    // You’d integrate Tesseract.js or cloud OCR, parse lines, match items to your category map.
+    alert('Receipt scanning requires OCR + NLP; consider Google Vision API or Tesseract.js.');
   };
 
   return (
     <FadeInContainer>
-      <div className="h-full bg-gray-50 flex flex-col">
-        {/* Header Area */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 shadow-md text-center">
-          <h1 className="text-2xl font-bold text-white">Scan & Add Items</h1>
-          <p className="text-sm text-white opacity-90 mt-1">
-            Quickly scan your food or manually add an item.
-          </p>
+      <div className="h-full flex flex-col bg-gray-100">
+
+        {/* Toast */}
+        {toast && (
+          <div className="fixed top-16 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+            {toast}
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="bg-white p-4 shadow flex justify-between items-center">
+          <h1 className="text-lg font-bold">Scan & Add Items</h1>
+          {mode !== 'choose' && (
+            <button onClick={() => setMode('choose')}>
+              <X size={20} />
+            </button>
+          )}
         </div>
 
-        {/* Main Action Buttons */}
-        <div className="flex flex-col items-center justify-center flex-1 px-4">
-          <button
-            onClick={handleScanAndAdd}
-            className="w-full py-4 bg-green-600 text-white rounded-lg shadow-lg mb-4 flex items-center justify-center space-x-2"
-          >
-            <Camera size={24} />
-            <span className="text-lg font-medium">Scan and Add</span>
-          </button>
+        {/* Choose Mode */}
+        {mode === 'choose' && (
+          <div className="flex-1 flex flex-col justify-center space-y-4 px-6">
+            <button
+              onClick={handleScan}
+              className="w-full py-3 bg-green-500 text-white rounded-lg flex items-center justify-center space-x-2 shadow"
+            >
+              <Camera size={24} />
+              <span>Scan Product</span>
+            </button>
+            <button
+              onClick={() => setMode('manual')}
+              className="w-full py-3 bg-blue-500 text-white rounded-lg flex items-center justify-center space-x-2 shadow"
+            >
+              <Check size={24} />
+              <span>Manual Entry</span>
+            </button>
+            <button
+              onClick={handleScanReceipt}
+              className="w-full py-3 bg-purple-500 text-white rounded-lg flex items-center justify-center space-x-2 shadow"
+            >
+              <Receipt size={24} />
+              <span>Scan Receipt</span>
+            </button>
+          </div>
+        )}
 
-          <button
-            onClick={handleManualEntry}
-            className="w-full py-4 bg-gray-200 text-gray-800 rounded-lg shadow-lg flex items-center justify-center space-x-2"
-          >
-            <Edit2 size={24} />
-            <span className="text-lg font-medium">Manual Entry</span>
-          </button>
-        </div>
-
-        {/* Show confirmation message if applicable */}
-        {message && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition duration-300">
-            {message}
-            
+        {/* Scan Preview */}
+        {mode === 'scanned' && scanned && (
+          <div className="p-4 bg-white flex-1 overflow-auto">
+            <h2 className="text-lg font-semibold mb-2">Scanned Product</h2>
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-3xl">
+                {categoryIcons[scanned.category]}
+              </div>
+              <div>
+                <p className="font-medium">{scanned.name}</p>
+                <p className="text-sm text-gray-600">{scanned.category} • {scanned.quantity}</p>
+                <p className="mt-1 text-sm text-green-600">
+                  {scanned.expiresIn === null
+                    ? 'No expiry estimate'
+                    : `Expires in ${scanned.expiresIn} days`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => addItem(scanned)}
+              className="w-full py-2 bg-green-600 text-white rounded-lg"
+            >
+              Add to Inventory
+            </button>
           </div>
         )}
 
         {/* Manual Entry Form */}
-        {showManualEntry && (
-          <div className="p-4 bg-white shadow-sm border-t border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">Manual Entry</h2>
-            <form onSubmit={handleManualEntrySubmit} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Item Name"
-                value={manualName}
-                onChange={(e) => setManualName(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-              <div>
-                <label className="block text-sm mb-1">Category:</label>
-                <select
-                  value={manualCategory}
-                  onChange={(e) => setManualCategory(e.target.value)}
-                  className="w-full p-2 border rounded"
+        {mode === 'manual' && (
+          <form onSubmit={handleManualSubmit} className="p-4 bg-white flex-1 overflow-auto space-y-4">
+            <h2 className="text-lg font-semibold">Manual Entry</h2>
+
+            <input
+              type="text"
+              placeholder="Item Name"
+              value={manualName}
+              onChange={e => setManualName(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+
+            {/* Category Pills */}
+            <div className="flex space-x-2 overflow-x-auto py-2">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setManualCategory(cat)}
+                  className={`flex items-center space-x-1 px-3 py-1 rounded-full border ${
+                    manualCategory === cat
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
                 >
-                  <option value="Dairy">Dairy</option>
-                  <option value="Vegetables">Vegetables</option>
-                  <option value="Fruits">Fruits</option>
-                  <option value="Meat">Meat</option>
-                  <option value="Bakery">Bakery</option>
-                  <option value="Pantry">Pantry</option>
-                </select>
-              </div>
-              <input
-                type="text"
-                placeholder="Quantity (e.g., 1 gallon, 6 pcs)"
-                value={manualQuantity}
-                onChange={(e) => setManualQuantity(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="number"
-                placeholder="Expires in (days) [leave blank if not applicable]"
-                value={manualExpiresIn}
-                onChange={(e) => setManualExpiresIn(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <button
-                type="submit"
-                className="w-full py-2 bg-indigo-600 text-white rounded"
-              >
-                Add Item
-              </button>
-            </form>
-          </div>
+                  <span className="text-lg">{categoryIcons[cat]}</span>
+                  <span className="text-sm">{cat}</span>
+                </button>
+              ))}
+            </div>
+
+            <input
+              type="text"
+              placeholder="Quantity (e.g., 1 gallon, 6 pcs)"
+              value={manualQuantity}
+              onChange={e => setManualQuantity(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+
+            <input
+              type="number"
+              placeholder={`Expires in days (est ${DEFAULT_SHELF_LIFE[manualCategory]}d)`}
+              value={manualExpiresIn}
+              onChange={e => setManualExpiresIn(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+
+            <button
+              type="submit"
+              className="w-full py-2 bg-blue-600 text-white rounded-lg"
+            >
+              Add Item
+            </button>
+          </form>
         )}
 
-        {/* Simulated Scanned Product Preview */}
-        {scannedProduct && (
-          <div className="p-4 bg-white shadow-sm border-t border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">Scanned Product</h2>
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-3xl">
-                {scannedProduct.icon}
-              </div>
-              <div>
-                <p className="font-medium text-gray-800">{scannedProduct.name}</p>
-                <p className="text-sm text-gray-600">
-                  {scannedProduct.category} • {scannedProduct.quantity}
-                </p>
-                <p className="text-sm text-green-600 mt-1">{scannedProduct.expiryInfo}</p>
-              </div>
-            </div>
-            <div className="mt-4 flex space-x-3">
-              <button className="flex-1 py-3 bg-green-600 text-white rounded-lg flex items-center justify-center shadow">
-                <Check size={20} className="mr-2" />
-                <span>Add to Inventory</span>
-              </button>
-              <button
-                onClick={() => setScannedProduct(null)}
-                className="flex-1 py-3 bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center shadow"
-              >
-                <span>Cancel</span>
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </FadeInContainer>
   );
-};
-
-export default ScanScreen;
+}

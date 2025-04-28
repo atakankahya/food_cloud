@@ -1,56 +1,71 @@
 // src/components/BottomNav.jsx
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { Home, List, Camera, Bell, ShoppingCart } from 'lucide-react';
+import { ThemeContext } from '../App';
 
-const BottomNav = ({ currentScreen, setCurrentScreen }) => {
+export default function BottomNav({ currentScreen, setCurrentScreen }) {
+  const { theme } = useContext(ThemeContext);
+
+  // Common classes for each tab
+  const baseBtn = 'flex flex-col items-center py-2 flex-1';
+  const activeText = 'text-emerald-600 dark:text-emerald-400';
+  const inactiveText = 'text-gray-600 dark:text-gray-400';
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-t px-4 py-3 flex justify-around">
-      <button
-        onClick={() => setCurrentScreen('home')}
-        className={`flex flex-col items-center ${
-          currentScreen === 'home' ? 'text-emerald-600' : 'text-gray-600'
-        }`}
-      >
-        <Home size={24} />
-        <span className="text-xs">Home</span>
-      </button>
-      <button
-        onClick={() => setCurrentScreen('inventory')}
-        className={`flex flex-col items-center ${
-          currentScreen === 'inventory' ? 'text-emerald-600' : 'text-gray-600'
-        }`}
-      >
-        <List size={24} />
-        <span className="text-xs">Inventory</span>
-      </button>
-      <button
-        onClick={() => setCurrentScreen('scan')}
-        className="flex flex-col items-center justify-center bg-emerald-600 text-white rounded-full h-16 w-16 -mt-8 shadow-lg"
-      >
-        <Camera size={28} />
-        <span className="text-xs mt-1">Scan</span>
-      </button>
-      <button
-        onClick={() => setCurrentScreen('notifications')}
-        className={`flex flex-col items-center ${
-          currentScreen === 'notifications' ? 'text-emerald-600' : 'text-gray-600'
-        }`}
-      >
-        <Bell size={24} />
-        <span className="text-xs">Alerts</span>
-      </button>
-      <button
-        onClick={() => setCurrentScreen('shopping')}
-        className={`flex flex-col items-center ${
-          currentScreen === 'shopping' ? 'text-emerald-600' : 'text-gray-600'
-        }`}
-      >
-        <ShoppingCart size={24} />
-        <span className="text-xs">Shop</span>
-      </button>
-    </div>
-  );
-};
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex">
+        <button
+          onClick={() => setCurrentScreen('home')}
+          aria-label="Home"
+          className={`${baseBtn} ${currentScreen === 'home' ? activeText : inactiveText}`}
+        >
+          <Home size={24} />
+          <span className="text-xs">Home</span>
+        </button>
 
-export default BottomNav;
+        <button
+          onClick={() => setCurrentScreen('inventory')}
+          aria-label="Inventory"
+          className={`${baseBtn} ${currentScreen === 'inventory' ? activeText : inactiveText}`}
+        >
+          <List size={24} />
+          <span className="text-xs">Inventory</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentScreen('scan')}
+          aria-label="Scan"
+          className="relative -mt-4 flex-none"
+        >
+          <div
+            className="w-16 h-16 rounded-full bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center shadow-lg"
+          >
+            <Camera size={28} className="text-white" />
+          </div>
+          <span className={`block text-center mt-1 text-xs ${currentScreen === 'scan' ? activeText : inactiveText}`}>
+            Scan
+          </span>
+        </button>
+
+        <button
+          onClick={() => setCurrentScreen('notifications')}
+          aria-label="Alerts"
+          className={`${baseBtn} ${currentScreen === 'notifications' ? activeText : inactiveText}`}
+        >
+          <Bell size={24} />
+          <span className="text-xs">Alerts</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentScreen('shopping')}
+          aria-label="Shop"
+          className={`${baseBtn} ${currentScreen === 'shopping' ? activeText : inactiveText}`}
+        >
+          <ShoppingCart size={24} />
+          <span className="text-xs">Shop</span>
+        </button>
+      </div>
+    </nav>
+  );
+}
