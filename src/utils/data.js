@@ -31,9 +31,9 @@ export const notifications = [
 
 export const categoryIcons = {
   Dairy: '🥛',
-  Vegetables: '🥬',
+  Vegetables: '🍅',
   Fruits: '🍎',
-  Meat: '🥩',
+  Meat: '🍖',
   Bakery: '🍞',
   Pantry: '🥫',
 };

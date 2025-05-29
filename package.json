@@ -2,7 +2,7 @@
   "name": "food_c",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://atakankahya.github.io/food_cloud",
+  "homepage": "https://atakankahya.github.io/food_cloud_dev",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
